@@ -3,14 +3,10 @@
 FILE: hukum-newton-interaktif.html
 ================================================================================
 
-PERBAIKAN HUKUM III:
-1. Skenario: Tabrakan Elastis (Collision) antara Balok A dan Balok B.
-2. Kontrol: 
-   - Slider Massa A
-   - Slider Massa B (Hanya muncul di Hukum III)
-   - Slider Kecepatan Awal A (Menggantikan slider Gaya pada mode ini)
-3. Fisika: Hukum kekekalan momentum dan energi (tumbukan lenting sempurna).
-4. Visualisasi: Gaya Aksi-Reaksi ditampilkan saat tabrakan terjadi.
+PERBAIKAN:
+1. Navigasi: Menambahkan tombol "Kembali ke Menu" dan "Matematika" di header.
+2. Hukum III: Skenario Tabrakan dengan kontrol massa dan kecepatan.
+3. Layout: Responsif dengan scroll independen.
 
 ================================================================================
 -->
@@ -121,6 +117,10 @@ PERBAIKAN HUKUM III:
       font-size: 0.875rem;
       cursor: pointer;
       transition: all 0.2s;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
     }
     .btn-gold {
       background: linear-gradient(135deg, var(--brand-gold), var(--brand-gold-dark));
@@ -209,6 +209,22 @@ PERBAIKAN HUKUM III:
       <div class="max-w-3xl mx-auto">
         
         <header class="mb-12 text-center pt-8">
+          <!-- NAVIGATION BUTTONS ADDED HERE -->
+          <div class="flex justify-center gap-4 mb-6">
+            <a href="index.html" class="btn btn-outline text-xs px-4 py-2 gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+              Kembali ke Menu
+            </a>
+            <a href="matematika.html" class="btn btn-gold text-xs px-4 py-2 gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+              </svg>
+              Matematika
+            </a>
+          </div>
+
           <p class="text-xs uppercase tracking-widest mb-2" style="color: var(--brand-gold);">Fisika Kelas X</p>
           <h1 class="text-4xl md:text-5xl font-bold mb-4" style="color: var(--brand-gold-light);">Hukum Newton</h1>
           <p class="text-base" style="color: var(--text-muted);">Simulasi interaktif untuk memahami gerak dan gaya.</p>
@@ -470,10 +486,6 @@ PERBAIKAN HUKUM III:
         sim.x2 += sim.vB * dt_s * 0.5;
         
         // Check Collision
-        // Right edge of A >= Left edge of B
-        // A is at x, B is at x2
-        // Assuming A moves right, B initially static/moving right slower
-        
         let dist = sim.x2 - (sim.x + widthA);
         
         if (dist <= 0 && !sim.collision) {
@@ -482,12 +494,10 @@ PERBAIKAN HUKUM III:
             sim.collisionTimer = 20; // frames to show flash
             
             // Elastic Collision Formulas
-            // v1' = ((m1-m2)*v1 + 2*m2*v2) / (m1+m2)
-            // v2' = ((m2-m1)*v2 + 2*m1*v1) / (m1+m2)
             let m1 = sim.m;
             let m2 = sim.mB;
             let v1 = sim.vA;
-            let v2 = sim.vB; // usually 0
+            let v2 = sim.vB; 
             
             let newVA = ((m1 - m2) * v1 + 2 * m2 * v2) / (m1 + m2);
             let newVB = ((m2 - m1) * v2 + 2 * m1 * v1) / (m1 + m2);
@@ -733,7 +743,7 @@ PERBAIKAN HUKUM III:
       animateBg();
       initChart();
       renderQuiz();
-      updateUIState(); // Init UI
+      updateUIState(); 
       requestAnimationFrame(loop);
       
       const sliderF = document.getElementById('slider-f');
@@ -762,7 +772,6 @@ PERBAIKAN HUKUM III:
       sliderVA.oninput = () => {
         sim.vA_init = parseFloat(sliderVA.value);
         document.getElementById('disp-va').innerText = sim.vA_init;
-        // Live update if not collided yet
         if(!sim.collision) sim.vA = sim.vA_init;
       };
       
