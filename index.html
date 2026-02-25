@@ -143,12 +143,64 @@
       background: linear-gradient(90deg, transparent, var(--brand-gold), transparent);
       opacity: 0.3;
     }
+
+    /* ========================================= */
+    /* TRANSITION OVERLAY STYLES */
+    /* ========================================= */
+    #transition-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #050505;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transform: translateY(100%); /* Start off-screen bottom */
+      transition: transform 0.6s cubic-bezier(0.65, 0, 0.35, 1);
+      border-top: 4px solid var(--brand-gold);
+    }
+
+    #transition-overlay.active {
+      transform: translateY(0);
+    }
+
+    .loader-spinner {
+      width: 50px;
+      height: 50px;
+      border: 3px solid rgba(212, 168, 83, 0.2);
+      border-top-color: var(--brand-gold);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .loader-text {
+      margin-top: 1.5rem;
+      font-family: 'Space Grotesk', sans-serif;
+      color: var(--brand-gold);
+      letter-spacing: 2px;
+      font-size: 0.875rem;
+      text-transform: uppercase;
+    }
   </style>
 </head>
 <body class="dark">
 
   <!-- Background Canvas -->
   <canvas id="particle-canvas"></canvas>
+  
+  <!-- TRANSITION OVERLAY ELEMENT -->
+  <div id="transition-overlay">
+    <div class="loader-spinner"></div>
+    <div class="loader-text">Memuat Modul...</div>
+  </div>
 
   <!-- Main Container -->
   <div class="relative z-10 min-h-screen flex flex-col justify-center items-center px-4 py-12">
@@ -170,7 +222,8 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-4xl mb-16">
       
       <!-- Card: Fisika -->
-      <div class="glass-card rounded-2xl p-8 animate-fade-in-up delay-200 group cursor-pointer" onclick="window.location.href='fisika.html'">
+      <!-- Ubah onclick menjadi fungsi navigasi kustom -->
+      <div class="glass-card rounded-2xl p-8 animate-fade-in-up delay-200 group cursor-pointer" onclick="navigateTo('fisika.html')">
         <div class="flex flex-col h-full">
           <div class="flex justify-between items-start mb-6">
             <div class="w-16 h-16 rounded-xl flex items-center justify-center border border-yellow-500/30 bg-yellow-500/5 transition-all group-hover:bg-yellow-500/20">
@@ -194,7 +247,7 @@
               <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
               <span class="text-xs text-gray-500">Modul Aktif</span>
             </div>
-            <button class="btn-enter px-4 py-2 rounded-lg text-xs font-semibold">
+            <button class="btn-enter px-4 py-2 rounded-lg text-xs font-semibold" onclick="event.stopPropagation(); navigateTo('fisika.html')">
               Mulai Belajar
             </button>
           </div>
@@ -202,7 +255,7 @@
       </div>
       
       <!-- Card: Matematika -->
-      <div class="glass-card rounded-2xl p-8 animate-fade-in-up delay-300 group cursor-pointer" onclick="window.location.href='matematika.html'">
+      <div class="glass-card rounded-2xl p-8 animate-fade-in-up delay-300 group cursor-pointer" onclick="navigateTo('matematika.html')">
         <div class="flex flex-col h-full">
           <div class="flex justify-between items-start mb-6">
             <div class="w-16 h-16 rounded-xl flex items-center justify-center border border-blue-400/30 bg-blue-400/5 transition-all group-hover:bg-blue-400/20">
@@ -226,7 +279,7 @@
               <span class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
               <span class="text-xs text-gray-500">Modul Aktif</span>
             </div>
-            <button class="px-4 py-2 rounded-lg text-xs font-semibold bg-blue-500/10 border border-blue-500/30 text-blue-400 hover:bg-blue-500/20 transition">
+            <button class="px-4 py-2 rounded-lg text-xs font-semibold bg-blue-500/10 border border-blue-500/30 text-blue-400 hover:bg-blue-500/20 transition" onclick="event.stopPropagation(); navigateTo('matematika.html')">
               Mulai Belajar
             </button>
           </div>
@@ -287,6 +340,21 @@
       });
       
       requestAnimationFrame(animate);
+    }
+
+    // ============================================================
+    // PAGE TRANSITION LOGIC
+    // ============================================================
+    function navigateTo(url) {
+      const overlay = document.getElementById('transition-overlay');
+      
+      // Add 'active' class to trigger CSS slide-up animation
+      overlay.classList.add('active');
+      
+      // Wait for animation to finish (600ms as defined in CSS) + small buffer
+      setTimeout(() => {
+        window.location.href = url;
+      }, 700);
     }
 
     window.addEventListener('resize', init);
