@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portal Pembelajaran Interaktif</title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            display: ['Space Grotesk', 'sans-serif'],
+            body: ['Inter', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  
+  <style>
+    :root {
+      --brand-gold: #D4A853;
+      --brand-gold-light: #E8C97A;
+      --brand-gold-dark: #B8923F;
+      --bg-primary: #050505;
+      --bg-secondary: #0a0a0a;
+      --text-primary: #f0f0f0;
+      --text-muted: #888;
+      --border: rgba(212, 168, 83, 0.2);
+    }
+    
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    
+    /* Particle Background */
+    #particle-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      pointer-events: none;
+    }
+    
+    /* Glass Effect */
+    .glass-card {
+      background: rgba(15, 15, 15, 0.6);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--border);
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    
+    .glass-card:hover {
+      border-color: var(--brand-gold);
+      transform: translateY(-10px);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.5), 0 0 30px rgba(212, 168, 83, 0.1);
+    }
+    
+    /* Text Gradient */
+    .text-gradient {
+      background: linear-gradient(135deg, var(--brand-gold-light), var(--brand-gold));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    
+    /* Button Styles */
+    .btn-enter {
+      position: relative;
+      overflow: hidden;
+      background: transparent;
+      border: 1px solid var(--brand-gold);
+      color: var(--brand-gold);
+      transition: color 0.3s;
+    }
+    
+    .btn-enter::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, var(--brand-gold), transparent);
+      transition: left 0.5s;
+      z-index: -1;
+    }
+    
+    .btn-enter:hover::before {
+      left: 100%;
+    }
+    
+    .btn-enter:hover {
+      color: #000;
+      background: var(--brand-gold);
+    }
+    
+    /* Animations */
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-15px); }
+    }
+    
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .animate-float {
+      animation: float 6s ease-in-out infinite;
+    }
+    
+    .animate-fade-in-up {
+      animation: fadeInUp 0.8s ease-out forwards;
+    }
+    
+    .delay-100 { animation-delay: 0.1s; opacity: 0; }
+    .delay-200 { animation-delay: 0.2s; opacity: 0; }
+    .delay-300 { animation-delay: 0.3s; opacity: 0; }
+    .delay-400 { animation-delay: 0.4s; opacity: 0; }
+
+    /* Decorative Lines */
+    .deco-line {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--brand-gold), transparent);
+      opacity: 0.3;
+    }
+  </style>
+</head>
+<body class="dark">
+
+  <!-- Background Canvas -->
+  <canvas id="particle-canvas"></canvas>
+
+  <!-- Main Container -->
+  <div class="relative z-10 min-h-screen flex flex-col justify-center items-center px-4 py-12">
+    
+    <!-- Header Section -->
+    <header class="text-center mb-16 animate-fade-in-up">
+      <div class="inline-block mb-4 px-4 py-1 rounded-full border border-yellow-500/30 bg-yellow-500/5">
+        <span class="text-xs font-medium tracking-widest uppercase" style="color: var(--brand-gold);">Media Pembelajaran</span>
+      </div>
+      <h1 class="text-4xl md:text-6xl lg:text-7xl font-bold mb-4 tracking-tight" style="font-family: 'Space Grotesk', sans-serif;">
+        <span class="text-white">Pintar</span> <span class="text-gradient">Interaktif</span>
+      </h1>
+      <p class="text-gray-400 max-w-lg mx-auto text-sm md:text-base">
+        Jelajahi dunia sains dan logika melalui simulasi visual yang memudahkan pemahaman konsep kompleks.
+      </p>
+    </header>
+    
+    <!-- Selection Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-4xl mb-16">
+      
+      <!-- Card: Fisika -->
+      <div class="glass-card rounded-2xl p-8 animate-fade-in-up delay-200 group cursor-pointer" onclick="window.location.href='fisika.html'">
+        <div class="flex flex-col h-full">
+          <div class="flex justify-between items-start mb-6">
+            <div class="w-16 h-16 rounded-xl flex items-center justify-center border border-yellow-500/30 bg-yellow-500/5 transition-all group-hover:bg-yellow-500/20">
+              <!-- Atom Icon -->
+              <svg class="w-8 h-8 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+              </svg>
+            </div>
+            <span class="text-xs font-mono text-gray-600">01</span>
+          </div>
+          
+          <h2 class="text-2xl font-bold text-white mb-2" style="font-family: 'Space Grotesk', sans-serif;">Fisika</h2>
+          <p class="text-gray-400 text-sm mb-6 flex-grow">
+            Pelajari bagaimana Hukum Newton dengan visual interaktif, tersedia juga soal soal pemahaman Hukum Newton.
+          </p>
+          
+          <div class="deco-line mb-4"></div>
+          
+          <div class="flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+              <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+              <span class="text-xs text-gray-500">Modul Aktif</span>
+            </div>
+            <button class="btn-enter px-4 py-2 rounded-lg text-xs font-semibold">
+              Mulai Belajar
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Card: Matematika -->
+      <div class="glass-card rounded-2xl p-8 animate-fade-in-up delay-300 group cursor-pointer" onclick="window.location.href='matematika.html'">
+        <div class="flex flex-col h-full">
+          <div class="flex justify-between items-start mb-6">
+            <div class="w-16 h-16 rounded-xl flex items-center justify-center border border-blue-400/30 bg-blue-400/5 transition-all group-hover:bg-blue-400/20">
+              <!-- Calculator/Function Icon -->
+              <svg class="w-8 h-8 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+              </svg>
+            </div>
+            <span class="text-xs font-mono text-gray-600">02</span>
+          </div>
+          
+          <h2 class="text-2xl font-bold text-white mb-2" style="font-family: 'Space Grotesk', sans-serif;">Matematika</h2>
+          <p class="text-gray-400 text-sm mb-6 flex-grow">
+            Visualisasi geometri, aljabar, dan kalkulus. Ubah rumus kompleks menjadi grafik yang mudah dipahami.
+          </p>
+          
+          <div class="deco-line mb-4" style="background: linear-gradient(90deg, transparent, #60a5fa, transparent);"></div>
+          
+          <div class="flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+              <span class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
+              <span class="text-xs text-gray-500">Modul Aktif</span>
+            </div>
+            <button class="px-4 py-2 rounded-lg text-xs font-semibold bg-blue-500/10 border border-blue-500/30 text-blue-400 hover:bg-blue-500/20 transition">
+              Mulai Belajar
+            </button>
+          </div>
+        </div>
+      </div>
+      
+    </div>
+    
+    <!-- Footer / Quote -->
+    <footer class="text-center text-gray-600 text-xs animate-fade-in-up delay-400">
+      <p>Developed with passion for education.</p>
+      <p class="mt-1">made by Revrian Saladin</p>
+    </footer>
+    
+  </div>
+
+  <script>
+    // ============================================================
+    // PARTICLE BACKGROUND ENGINE
+    // ============================================================
+    const canvas = document.getElementById('particle-canvas');
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+
+    function init() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      
+      particles = [];
+      const particleCount = Math.floor((canvas.width * canvas.height) / 15000);
+      
+      for (let i = 0; i < particleCount; i++) {
+        particles.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          r: Math.random() * 1.5 + 0.5,
+          vx: (Math.random() - 0.5) * 0.3,
+          vy: (Math.random() - 0.5) * 0.3,
+          opacity: Math.random() * 0.5 + 0.2
+        });
+      }
+    }
+
+    function animate() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      particles.forEach(p => {
+        p.x += p.vx;
+        p.y += p.vy;
+
+        if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+        if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(212, 168, 83, ${p.opacity * 0.5})`;
+        ctx.fill();
+      });
+      
+      requestAnimationFrame(animate);
+    }
+
+    window.addEventListener('resize', init);
+    
+    init();
+    animate();
+  </script>
+</body>
+</html>
