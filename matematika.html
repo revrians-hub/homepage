@@ -1,0 +1,813 @@
+<!--
+================================================================================
+FILE: matematika-interaktif.html
+================================================================================
+
+KONTEN:
+1. Geometri: Visualisasi Luas dan Keliling Lingkaran.
+2. Aljabar: Visualisasi Persamaan Garis (y = mx + c).
+3. Kalkulus: Visualisasi Turunan (Garis Singgung Kurva).
+
+STRUKTUR:
+- Navigasi sama dengan halaman Fisika.
+- Layout dua kolom (Materi & Simulasi).
+
+================================================================================
+-->
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Matematika Interaktif</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            display: ['Space Grotesk', 'sans-serif'],
+            body: ['Inter', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  
+  <style>
+    :root {
+      --brand-gold: #D4A853;
+      --brand-gold-light: #E8C97A;
+      --brand-gold-dark: #B8923F;
+      --bg-primary: #050505;
+      --bg-card: rgba(15, 15, 15, 0.85);
+      --text-primary: #f0f0f0;
+      --text-muted: #888;
+      --border: rgba(212, 168, 83, 0.2);
+    }
+    
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      height: 100vh;
+      overflow: hidden;
+    }
+    
+    #bg-canvas {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+    }
+    
+    .app-container {
+      display: flex;
+      height: 100vh;
+      position: relative;
+      z-index: 10;
+    }
+    
+    .col-material {
+      flex: 1;
+      height: 100vh;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      scrollbar-width: thin;
+      scrollbar-color: var(--brand-gold-dark) transparent;
+    }
+    
+    .col-sim {
+      width: 420px;
+      height: 100vh;
+      overflow-y: auto;
+      background: rgba(0,0,0,0.6);
+      border-left: 1px solid var(--border);
+      backdrop-filter: blur(10px);
+    }
+    
+    @media (max-width: 900px) {
+      .app-container { flex-direction: column; }
+      .col-material, .col-sim { width: 100%; height: auto; overflow: visible; }
+      .col-sim { border-left: none; border-top: 1px solid var(--border); }
+    }
+    
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      transition: border-color 0.3s;
+    }
+    .card:hover { border-color: rgba(212, 168, 83, 0.5); }
+    
+    h1, h2, h3 { font-family: 'Space Grotesk', sans-serif; color: var(--brand-gold-light); }
+    
+    .btn {
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-weight: 500;
+      font-size: 0.875rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .btn-gold {
+      background: linear-gradient(135deg, var(--brand-gold), var(--brand-gold-dark));
+      color: #000;
+      border: none;
+    }
+    .btn-gold:hover { box-shadow: 0 4px 15px rgba(212, 168, 83, 0.3); transform: translateY(-1px); }
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--brand-gold);
+      color: var(--brand-gold);
+    }
+    .btn-outline:hover { background: rgba(212, 168, 83, 0.1); }
+    
+    select, input[type="text"], input[type="number"] {
+      background: #111;
+      color: #fff;
+      border: 1px solid #333;
+      padding: 8px 12px;
+      border-radius: 6px;
+      width: 100%;
+    }
+    select:focus, input:focus { outline: none; border-color: var(--brand-gold); }
+    
+    input[type="range"] {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 4px;
+      background: #222;
+      border-radius: 2px;
+      outline: none;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      background: var(--brand-gold);
+      border-radius: 50%;
+      cursor: pointer;
+      box-shadow: 0 0 10px var(--brand-gold);
+    }
+    
+    #sim-canvas {
+      background: #050505;
+      border-radius: 8px;
+      border: 1px solid #222;
+      width: 100% !important;
+      height: auto !important;
+      display: block;
+    }
+    
+    .formula {
+      font-family: 'Times New Roman', serif;
+      font-style: italic;
+      background: rgba(212, 168, 83, 0.1);
+      padding: 8px 16px;
+      border-left: 3px solid var(--brand-gold);
+      margin: 8px 0;
+      display: inline-block;
+    }
+    
+    .q-opt {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid #333;
+      padding: 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: left;
+    }
+    .q-opt:hover { border-color: var(--brand-gold); background: rgba(212,168,83,0.05); }
+    .q-opt.correct { border-color: #22c55e; background: rgba(34,197,94,0.1); }
+    .q-opt.wrong { border-color: #ef4444; background: rgba(239,68,68,0.1); }
+
+    /* Dynamic Controls Visibility */
+    .control-hidden { display: none; }
+  </style>
+</head>
+<body class="dark">
+
+  <canvas id="bg-canvas"></canvas>
+
+  <div class="app-container">
+    <!-- LEFT: Material -->
+    <div class="col-material p-6 md:p-10">
+      <div class="max-w-3xl mx-auto">
+        
+        <header class="mb-12 text-center pt-8">
+          <!-- NAVIGATION BUTTONS -->
+          <div class="flex justify-center gap-4 mb-6">
+            <a href="index.html" class="btn btn-outline text-xs px-4 py-2 gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+              Kembali ke Menu
+            </a>
+            <a href="fisika.html" class="btn btn-gold text-xs px-4 py-2 gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+              </svg>
+              Fisika
+            </a>
+          </div>
+
+          <p class="text-xs uppercase tracking-widest mb-2" style="color: var(--brand-gold);">Matematika Kelas X-XII</p>
+          <h1 class="text-4xl md:text-5xl font-bold mb-4" style="color: var(--brand-gold-light);">Visualisasi Matematika</h1>
+          <p class="text-base" style="color: var(--text-muted);">Pahami rumus kompleks melalui grafik dan simulasi interaktif.</p>
+        </header>
+        
+        <div class="card">
+          <h2 class="text-xl mb-4">Geometri</h2>
+          <p class="mb-3 text-sm" style="color: var(--text-muted);">Ilmu yang mempelajari ukuran, bentuk, dan posisi relative dari bangun datar dan ruang.</p>
+          <div class="formula">L = \pi r^2</div>
+          <div class="formula">K = 2 \pi r</div>
+          <p class="text-sm mt-2" style="color: var(--text-muted);">r adalah jari-jari lingkaran. Ubah nilai r untuk melihat perubahan luas dan keliling secara real-time.</p>
+        </div>
+        
+        <div class="card">
+          <h2 class="text-xl mb-4">Aljabar (Persamaan Garis)</h2>
+          <p class="mb-3 text-sm" style="color: var(--text-muted);">Hubungan linear antara variabel x dan y yang membentuk garis lurus pada bidang koordinat.</p>
+          <div class="formula">y = mx + c</div>
+          <p class="text-sm mt-2" style="color: var(--text-muted);">m adalah gradien (kemiringan), c adalah intercept (titik potong sumbu y).</p>
+        </div>
+        
+        <div class="card">
+          <h2 class="text-xl mb-4">Kalkulus (Turunan)</h2>
+          <p class="mb-3 text-sm" style="color: var(--text-muted);">Turunan menunjukkan laju perubahan fungsi. Gradien garis singgung kurva pada titik tertentu.</p>
+          <div class="formula">f(x) = ax^2 + bx + c</div>
+          <div class="formula">f'(x) = 2ax + b</div>
+          <p class="text-sm mt-2" style="color: var(--text-muted);">Garis singgung menyentuh kurva di satu titik dengan gradien sama dengan turunan di titik tersebut.</p>
+        </div>
+        
+        <div class="card">
+          <h2 class="text-xl mb-4">Latihan Soal</h2>
+          <div id="quiz-box">
+            <div class="flex gap-2 mb-4">
+              <button id="btn-next-q" class="btn btn-gold">Soal Berikutnya</button>
+              <button id="btn-reset-q" class="btn btn-outline">Reset</button>
+            </div>
+            <div id="q-content"></div>
+          </div>
+        </div>
+        
+      </div>
+    </div>
+    
+    <!-- RIGHT: Simulation -->
+    <div class="col-sim p-6">
+      <div class="sticky top-0 pt-4">
+        
+        <div class="card" style="background: rgba(0,0,0,0.5);">
+          <h3 class="text-lg mb-3">Simulasi Interaktif</h3>
+          <canvas id="sim-canvas" width="380" height="250"></canvas>
+          <div class="text-xs mt-2 font-mono h-4" id="sim-status" style="color: var(--brand-gold);">Mode: Geometri</div>
+        </div>
+        
+        <div class="card">
+          <div class="mb-4">
+            <label class="text-xs font-medium block mb-1" style="color: var(--text-muted);">Mode Simulasi</label>
+            <select id="mode-select" class="w-full">
+              <option value="geometri">Geometri: Lingkaran</option>
+              <option value="aljabar">Aljabar: Garis Linear</option>
+              <option value="kalkulus">Kalkulus: Garis Singgung</option>
+            </select>
+          </div>
+          
+          <!-- Dynamic Controls Container -->
+          <div id="controls-container" class="space-y-4">
+            
+            <!-- Control: Radius (Geometry) -->
+            <div id="ctrl-radius" class="mb-4">
+              <div class="flex justify-between text-xs mb-1">
+                <span>Jari-jari (r)</span>
+                <span id="disp-r" style="color: var(--brand-gold);">50</span>
+              </div>
+              <input type="range" id="slider-r" min="10" max="100" value="50">
+            </div>
+            
+            <!-- Control: Gradien (Aljabar) -->
+            <div id="ctrl-m" class="mb-4 hidden">
+              <div class="flex justify-between text-xs mb-1">
+                <span>Gradien (m)</span>
+                <span id="disp-m" style="color: var(--brand-gold);">1</span>
+              </div>
+              <input type="range" id="slider-m" min="-5" max="5" value="1" step="0.5">
+            </div>
+            
+            <!-- Control: Intercept (Aljabar) -->
+            <div id="ctrl-c" class="mb-4 hidden">
+              <div class="flex justify-between text-xs mb-1">
+                <span>Intercept (c)</span>
+                <span id="disp-c" style="color: var(--brand-gold);">0</span>
+              </div>
+              <input type="range" id="slider-c" min="-50" max="50" value="0">
+            </div>
+            
+             <!-- Control: Point X (Kalkulus) -->
+             <div id="ctrl-x0" class="mb-4 hidden">
+              <div class="flex justify-between text-xs mb-1">
+                <span>Titik X (x0)</span>
+                <span id="disp-x0" style="color: var(--brand-gold);">0</span>
+              </div>
+              <input type="range" id="slider-x0" min="-5" max="5" value="0" step="0.1">
+            </div>
+            
+          </div>
+          
+          <button id="btn-reset" class="btn btn-outline w-full mt-2">Reset Simulasi</button>
+        </div>
+        
+        <!-- Data Display -->
+        <div class="card" style="background: transparent; border: none; padding: 0;">
+          
+          <!-- Data Geometry -->
+          <div id="data-geo" class="grid grid-cols-2 gap-2 text-xs font-mono">
+            <div class="bg-black/40 p-3 rounded border border-white/10 text-center">
+              <div class="text-gray-500 mb-1 text-[10px]">LUAS (L)</div>
+              <div id="val-luas" style="color: var(--brand-gold); font-size: 1.2rem;">7854.0</div>
+              <div class="text-gray-500 text-[10px]">satuan²</div>
+            </div>
+            <div class="bg-black/40 p-3 rounded border border-white/10 text-center">
+              <div class="text-gray-500 mb-1 text-[10px]">KELILING (K)</div>
+              <div id="val-kell" style="color: var(--brand-gold); font-size: 1.2rem;">314.2</div>
+              <div class="text-gray-500 text-[10px]">satuan</div>
+            </div>
+          </div>
+          
+          <!-- Data Aljabar -->
+          <div id="data-aljabar" class="hidden grid grid-cols-2 gap-2 text-xs font-mono">
+            <div class="bg-black/40 p-3 rounded border border-white/10 text-center">
+              <div class="text-gray-500 mb-1 text-[10px]">GRADIEN (m)</div>
+              <div id="val-m-data" style="color: var(--brand-gold); font-size: 1.2rem;">1.0</div>
+              <div class="text-gray-500 text-[10px]">slope</div>
+            </div>
+            <div class="bg-black/40 p-3 rounded border border-white/10 text-center">
+              <div class="text-gray-500 mb-1 text-[10px]">Y-INTERCEPT</div>
+              <div id="val-c-data" style="color: var(--brand-gold); font-size: 1.2rem;">0.0</div>
+              <div class="text-gray-500 text-[10px]">c</div>
+            </div>
+          </div>
+          
+          <!-- Data Kalkulus -->
+          <div id="data-kalkulus" class="hidden grid grid-cols-2 gap-2 text-xs font-mono">
+            <div class="bg-black/40 p-3 rounded border border-white/10 text-center">
+              <div class="text-gray-500 mb-1 text-[10px]">TURUNAN f'(x)</div>
+              <div id="val-turunan" style="color: var(--brand-gold); font-size: 1.2rem;">0.0</div>
+              <div class="text-gray-500 text-[10px]">slope</div>
+            </div>
+            <div class="bg-black/40 p-3 rounded border border-white/10 text-center">
+              <div class="text-gray-500 mb-1 text-[10px]">NILAI f(x)</div>
+              <div id="val-fx" style="color: var(--brand-gold); font-size: 1.2rem;">0.0</div>
+              <div class="text-gray-500 text-[10px]">y</div>
+            </div>
+          </div>
+          
+        </div>
+        
+        <div class="card">
+          <h3 class="text-base mb-2">Grafik Fungsi</h3>
+          <div style="height: 150px;">
+            <canvas id="chart-math"></canvas>
+          </div>
+          <p class="text-xs mt-2 text-center" style="color: var(--text-muted);">Visualisasi fungsi matematis</p>
+        </div>
+        
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+  <script>
+    // ============================================================
+    // BACKGROUND PARTICLES
+    // ============================================================
+    const bgCanvas = document.getElementById('bg-canvas');
+    const bgCtx = bgCanvas.getContext('2d');
+    let particles = [];
+    
+    function initBg() {
+      bgCanvas.width = window.innerWidth;
+      bgCanvas.height = window.innerHeight;
+      particles = [];
+      for(let i=0; i<30; i++) {
+        particles.push({
+          x: Math.random() * bgCanvas.width,
+          y: Math.random() * bgCanvas.height,
+          r: Math.random() * 1.5 + 0.5,
+          vx: (Math.random() - 0.5) * 0.3,
+          vy: (Math.random() - 0.5) * 0.3
+        });
+      }
+    }
+    
+    function animateBg() {
+      bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
+      particles.forEach(p => {
+        p.x += p.vx; p.y += p.vy;
+        if(p.x < 0) p.x = bgCanvas.width;
+        if(p.x > bgCanvas.width) p.x = 0;
+        if(p.y < 0) p.y = bgCanvas.height;
+        if(p.y > bgCanvas.height) p.y = 0;
+        
+        bgCtx.beginPath();
+        bgCtx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+        bgCtx.fillStyle = 'rgba(212, 168, 83, 0.3)';
+        bgCtx.fill();
+      });
+      requestAnimationFrame(animateBg);
+    }
+    
+    // ============================================================
+    // MATH SIMULATION ENGINE
+    // ============================================================
+    const simCanvas = document.getElementById('sim-canvas');
+    const simCtx = simCanvas.getContext('2d');
+    
+    // State
+    let sim = {
+      mode: 'geometri',
+      r: 50,      // Radius
+      m: 1,       // Gradien
+      c: 0,       // Intercept
+      x0: 0       // Point X for Calculus
+    };
+    
+    let lastTime = 0;
+    
+    function updateMath(dt) {
+      
+      const w = simCanvas.width;
+      const h = simCanvas.height;
+      const cx = w / 2;
+      const cy = h / 2;
+      
+      if (sim.mode === 'geometri') {
+        let luas = Math.PI * sim.r * sim.r;
+        let kell = 2 * Math.PI * sim.r;
+        
+        document.getElementById('val-luas').innerText = luas.toFixed(1);
+        document.getElementById('val-kell').innerText = kell.toFixed(1);
+        document.getElementById('sim-status').innerText = "Luas & Keliling Lingkaran";
+        
+      } else if (sim.mode === 'aljabar') {
+        document.getElementById('val-m-data').innerText = sim.m.toFixed(1);
+        document.getElementById('val-c-data').innerText = sim.c.toFixed(1);
+        document.getElementById('sim-status').innerText = "Persamaan Garis: y = " + sim.m + "x + " + sim.c;
+        updateChart();
+        
+      } else if (sim.mode === 'kalkulus') {
+        // f(x) = x^2
+        let fx = sim.x0 * sim.x0;
+        // f'(x) = 2x
+        let turunan = 2 * sim.x0;
+        
+        document.getElementById('val-fx').innerText = fx.toFixed(1);
+        document.getElementById('val-turunan').innerText = turunan.toFixed(1);
+        document.getElementById('sim-status').innerText = "Garis singgung di x=" + sim.x0.toFixed(1);
+        updateChart();
+      }
+    }
+    
+    function drawMath() {
+      simCtx.clearRect(0, 0, simCanvas.width, simCanvas.height);
+      
+      const w = simCanvas.width;
+      const h = simCanvas.height;
+      const cx = w / 2;
+      const cy = h / 2;
+      
+      // Draw Background Grid
+      simCtx.strokeStyle = '#222';
+      simCtx.lineWidth = 1;
+      
+      // Grid lines
+      for(let i=0; i<w; i+=40) {
+        simCtx.beginPath(); simCtx.moveTo(i, 0); simCtx.lineTo(i, h); simCtx.stroke();
+      }
+      for(let i=0; i<h; i+=40) {
+        simCtx.beginPath(); simCtx.moveTo(0, i); simCtx.lineTo(w, i); simCtx.stroke();
+      }
+      
+      // Axis
+      simCtx.strokeStyle = '#444';
+      simCtx.lineWidth = 1;
+      simCtx.beginPath(); simCtx.moveTo(0, cy); simCtx.lineTo(w, cy); simCtx.stroke(); // X
+      simCtx.beginPath(); simCtx.moveTo(cx, 0); simCtx.lineTo(cx, h); simCtx.stroke(); // Y
+      
+      
+      if (sim.mode === 'geometri') {
+        // Draw Circle
+        simCtx.beginPath();
+        simCtx.arc(cx, cy, sim.r, 0, Math.PI * 2);
+        simCtx.strokeStyle = '#D4A853';
+        simCtx.lineWidth = 2;
+        simCtx.stroke();
+        
+        // Radius Line
+        simCtx.beginPath();
+        simCtx.moveTo(cx, cy);
+        simCtx.lineTo(cx + sim.r, cy);
+        simCtx.strokeStyle = '#E8C97A';
+        simCtx.stroke();
+        simCtx.fillStyle = '#E8C97A';
+        simCtx.font = '12px sans-serif';
+        simCtx.fillText('r', cx + sim.r/2, cy - 10);
+        
+      } else if (sim.mode === 'aljabar' || sim.mode === 'kalkulus') {
+        // Draw Function in Canvas (Coordinate system centered)
+        
+        // Scale factor (1 unit = 40px)
+        const scale = 40;
+        
+        // Draw Function Curve (for calculus)
+        if (sim.mode === 'kalkulus') {
+           simCtx.beginPath();
+           simCtx.strokeStyle = '#D4A853';
+           simCtx.lineWidth = 2;
+           for (let px = 0; px < w; px++) {
+             let x = (px - cx) / scale;
+             let y = x * x; // f(x) = x^2
+             let py = cy - (y * scale);
+             if (px === 0) simCtx.moveTo(px, py);
+             else simCtx.lineTo(px, py);
+           }
+           simCtx.stroke();
+        }
+        
+        // Draw Line (Aljabar)
+        if (sim.mode === 'aljabar') {
+           simCtx.beginPath();
+           simCtx.strokeStyle = '#3b82f6';
+           simCtx.lineWidth = 2;
+           for (let px = 0; px < w; px++) {
+             let x = (px - cx) / scale;
+             let y = sim.m * x + sim.c;
+             let py = cy - (y * scale);
+             if (px === 0) simCtx.moveTo(px, py);
+             else simCtx.lineTo(px, py);
+           }
+           simCtx.stroke();
+        }
+        
+        // Draw Tangent Line (Kalkulus)
+        if (sim.mode === 'kalkulus') {
+           let x0 = sim.x0;
+           let y0 = x0 * x0;
+           let slope = 2 * x0; // Turunan
+           
+           // Equation of tangent: y - y0 = m(x - x0) -> y = m*x - m*x0 + y0
+           // Intersection with screen borders
+           
+           simCtx.beginPath();
+           simCtx.strokeStyle = '#ef4444';
+           simCtx.lineWidth = 2;
+           
+           // Draw line segment
+           let x1 = x0 - 2;
+           let y1 = slope * x1 - slope * x0 + y0;
+           let x2 = x0 + 2;
+           let y2 = slope * x2 - slope * x0 + y0;
+           
+           simCtx.moveTo(cx + x1*scale, cy - y1*scale);
+           simCtx.lineTo(cx + x2*scale, cy - y2*scale);
+           simCtx.stroke();
+           
+           // Draw Point
+           simCtx.beginPath();
+           simCtx.arc(cx + x0*scale, cy - y0*scale, 5, 0, Math.PI*2);
+           simCtx.fillStyle = '#22c55e';
+           simCtx.fill();
+        }
+      }
+    }
+    
+    // ============================================================
+    // UI MANAGEMENT
+    // ============================================================
+    
+    function updateUIState() {
+        const mode = sim.mode;
+        
+        // Geometry Controls
+        document.getElementById('ctrl-radius').classList.toggle('hidden', mode !== 'geometri');
+        
+        // Aljabar Controls
+        document.getElementById('ctrl-m').classList.toggle('hidden', mode !== 'aljabar');
+        document.getElementById('ctrl-c').classList.toggle('hidden', mode !== 'aljabar');
+        
+        // Kalkulus Controls
+        document.getElementById('ctrl-x0').classList.toggle('hidden', mode !== 'kalkulus');
+        
+        // Data Displays
+        document.getElementById('data-geo').classList.toggle('hidden', mode !== 'geometri');
+        document.getElementById('data-aljabar').classList.toggle('hidden', mode !== 'aljabar');
+        document.getElementById('data-kalkulus').classList.toggle('hidden', mode !== 'kalkulus');
+    }
+    
+    // ============================================================
+    // CHART
+    // ============================================================
+    let chart;
+    function initChart() {
+      const ctx = document.getElementById('chart-math').getContext('2d');
+      chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          datasets: []
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { type: 'linear', position: 'center', grid: { color: '#222' }, ticks: { color: '#444' } },
+            y: { type: 'linear', position: 'center', grid: { color: '#222' }, ticks: { color: '#444' } }
+          }
+        }
+      });
+    }
+    
+    function updateChart() {
+       if (sim.mode === 'aljabar') {
+         let data = [];
+         for(let x=-10; x<=10; x+=0.5) {
+           data.push({x: x, y: sim.m * x + sim.c});
+         }
+         chart.data.datasets = [{
+           data: data,
+           borderColor: '#3b82f6',
+           borderWidth: 2,
+           pointRadius: 0,
+           tension: 0
+         }];
+       } else if (sim.mode === 'kalkulus') {
+         // Function curve
+         let dataFunc = [];
+         for(let x=-10; x<=10; x+=0.2) {
+           dataFunc.push({x: x, y: x*x});
+         }
+         
+         // Tangent line segment
+         let dataTan = [];
+         let x0 = sim.x0;
+         let slope = 2*x0;
+         let y0 = x0*x0;
+         // range around x0
+         for(let x=x0-3; x<=x0+3; x+=0.2) {
+            dataTan.push({x: x, y: slope*(x-x0) + y0});
+         }
+         
+         chart.data.datasets = [
+           {
+             data: dataFunc,
+             borderColor: '#D4A853',
+             borderWidth: 2,
+             pointRadius: 0
+           },
+           {
+             data: dataTan,
+             borderColor: '#ef4444',
+             borderWidth: 2,
+             pointRadius: 0,
+             borderDash: [5, 5]
+           },
+           {
+             data: [{x: x0, y: y0}],
+             borderColor: '#22c55e',
+             backgroundColor: '#22c55e',
+             pointRadius: 5,
+             pointHoverRadius: 7,
+             showLine: false
+           }
+         ];
+       } else {
+         // Default empty or circle approximation (not used)
+         chart.data.datasets = [];
+       }
+       
+       chart.update('none');
+    }
+    
+    // Main Loop
+    function loop(timestamp) {
+      if (!lastTime) lastTime = timestamp;
+      let dt = timestamp - lastTime;
+      lastTime = timestamp;
+      
+      updateMath(dt);
+      drawMath();
+      requestAnimationFrame(loop);
+    }
+    
+    // ============================================================
+    // QUIZ
+    // ============================================================
+    const questions = [
+      { q: "Luas lingkaran dengan jari-jari 7 cm adalah... (π=22/7)", opts: ["154 cm²", "44 cm²", "22 cm²", "77 cm²"], ans: 0 },
+      { q: "Gradien garis y = 3x - 5 adalah...", opts: ["-5", "3", "2", "-3"], ans: 1 },
+      { q: "Turunan dari f(x) = x^2 adalah...", opts: ["x", "2x", "2x^2", "x^2"], ans: 1 }
+    ];
+    let qIdx = 0;
+    
+    function renderQuiz() {
+      const q = questions[qIdx];
+      const el = document.getElementById('q-content');
+      let html = `<p class='font-medium mb-3 text-sm'>${q.q}</p>`;
+      q.opts.forEach((o, i) => {
+        html += `<div class='q-opt mb-2' data-i='${i}'>${o}</div>`;
+      });
+      el.innerHTML = html;
+      
+      el.querySelectorAll('.q-opt').forEach(btn => {
+        btn.onclick = () => {
+          const isCorrect = parseInt(btn.dataset.i) === q.ans;
+          btn.classList.add(isCorrect ? 'correct' : 'wrong');
+          if(!isCorrect) {
+             el.querySelectorAll('.q-opt')[q.ans].classList.add('correct');
+          }
+        };
+      });
+    }
+    
+    // ============================================================
+    // INITIALIZATION
+    // ============================================================
+    function init() {
+      initBg();
+      animateBg();
+      initChart();
+      renderQuiz();
+      updateUIState(); 
+      requestAnimationFrame(loop);
+      
+      const sliderR = document.getElementById('slider-r');
+      const sliderM = document.getElementById('slider-m');
+      const sliderC = document.getElementById('slider-c');
+      const sliderX0 = document.getElementById('slider-x0');
+      const modeSelect = document.getElementById('mode-select');
+      
+      sliderR.oninput = () => {
+        sim.r = parseFloat(sliderR.value);
+        document.getElementById('disp-r').innerText = sim.r;
+      };
+      
+      sliderM.oninput = () => {
+        sim.m = parseFloat(sliderM.value);
+        document.getElementById('disp-m').innerText = sim.m;
+      };
+      
+      sliderC.oninput = () => {
+        sim.c = parseFloat(sliderC.value);
+        document.getElementById('disp-c').innerText = sim.c;
+      };
+      
+      sliderX0.oninput = () => {
+        sim.x0 = parseFloat(sliderX0.value);
+        document.getElementById('disp-x0').innerText = sim.x0.toFixed(1);
+      };
+      
+      modeSelect.onchange = () => {
+        sim.mode = modeSelect.value;
+        updateUIState();
+        updateChart();
+      };
+      
+      document.getElementById('btn-reset').onclick = () => {
+        sim.r = 50; sliderR.value = 50; document.getElementById('disp-r').innerText = "50";
+        sim.m = 1; sliderM.value = 1; document.getElementById('disp-m').innerText = "1";
+        sim.c = 0; sliderC.value = 0; document.getElementById('disp-c').innerText = "0";
+        sim.x0 = 0; sliderX0.value = 0; document.getElementById('disp-x0').innerText = "0";
+        updateChart();
+      };
+      
+      document.getElementById('btn-next-q').onclick = () => {
+        qIdx = (qIdx + 1) % questions.length;
+        renderQuiz();
+      };
+      document.getElementById('btn-reset-q').onclick = () => renderQuiz();
+      
+      window.onresize = initBg;
+    }
+    
+    document.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>
